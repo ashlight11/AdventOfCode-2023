@@ -1,7 +1,7 @@
 import java.io.File
 
 fun main(args: Array<String>) {
-    val url = object {}.javaClass.getResource("day5InputTest.txt")
+    val url = object {}.javaClass.getResource("day5Input.txt")
     val file = File(url!!.toURI())
     val day = DayFive(file)
     day.computePartOne()
