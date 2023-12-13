@@ -7,12 +7,13 @@ class DayThree(file: File) {
         val lines = baseFile.readLines()
         val charArrayArray = lines.map {
             it.toCharArray()
-        }
-        //findNumbers(charArrayArray[0])
-        val allNumbers = findNumbersInCharArrayArray(charArrayArray)
+        } // I chose to see the input as a matrix of characters
+
+        val allNumbers = findNumbersInCharArrayArray(charArrayArray) // find all the numbers and their positions in the matrix
         val partNumbers = allNumbers.filter {
             numberIsPart(it, charArrayArray)
-        }
+        }// extract only partNumbers
+
         partNumbers.forEach {
             println("Valeur : " + it.value + " at  line " + it.rank + " position (" + it.lowestIndex + ", " + it.highestIndex + ")")
         }
@@ -20,22 +21,18 @@ class DayThree(file: File) {
             it.value
         }
         println(result)
-        /*val test1 = NumberWithIndexes(862, 56, 59)
-        val test2 = NumberWithIndexes(453, 86, 88)
-        println(numberIsPart(0, test1, charArrayArray))
-        println(numberIsPart(0, test2, charArrayArray))*/
     }
 
     fun computePartTwo() {
         val lines = baseFile.readLines()
         val charArrayArray = lines.map {
             it.toCharArray()
-        }
+        } // I chose to see the input as a matrix of characters
 
-        val allNumbers = findNumbersInCharArrayArray(charArrayArray)
+        val allNumbers = findNumbersInCharArrayArray(charArrayArray) // find all the numbers and their positions in the matrix
         val partNumbersWithChars = allNumbers.mapNotNull {
             numberIsPartWith(it, charArrayArray)
-        }
+        } // extract only partNumbers
 
         val gears = findGears(partNumbersWithChars)
         gears.forEach {
@@ -46,6 +43,10 @@ class DayThree(file: File) {
 
     }
 
+    /**
+     * A number is part if it is surrounded by a special character
+     * My approach is to go over all the characters in the neighbourhood, hence the CharArray
+     */
     private fun numberIsPart(number: NumberWithIndexesAndRank, charArray: List<CharArray>): Boolean {
         val minIndex = number.lowestIndex
         val maxIndex = number.highestIndex
@@ -74,6 +75,11 @@ class DayThree(file: File) {
         return false
     }
 
+    /**
+     * A number is part if it is surrounded by a special character
+     * My approach is to go over all the characters in the neighbourhood, hence the CharArray
+     * This function also groups a part number with which character makes it be a "part number"
+     */
     private fun numberIsPartWith(
         number: NumberWithIndexesAndRank,
         charArray: List<CharArray>
@@ -111,6 +117,10 @@ class DayThree(file: File) {
         return !c.isLetterOrDigit() && c != '.'
     }
 
+    /**
+     * Goes over each line in the global matrix to find numbers in it
+     * @return all the numbers in the string as well as their absolute positions in the global matrix
+     */
     private fun findNumbersInCharArrayArray(charCharArray: List<CharArray>): List<NumberWithIndexesAndRank> {
         val result = emptyList<NumberWithIndexesAndRank>().toMutableList()
         for ((index, charArray) in charCharArray.withIndex()) {
@@ -119,6 +129,11 @@ class DayThree(file: File) {
         return result
     }
 
+    /**
+     * For a given string described as a CharArray, finds the numbers in the string
+     * as well as their absolute positions in the global matrix.
+     * @param rank is the number of the line in the matrix
+     */
     private fun findNumbers(charArray: CharArray, rank: Int): List<NumberWithIndexesAndRank> {
         var result: List<NumberWithIndexesAndRank> = emptyList<NumberWithIndexesAndRank>().toMutableList()
         var temp = String()
@@ -162,13 +177,13 @@ class DayThree(file: File) {
                         rank = rank
                     )
                 )
-            //println("result has been updated $result")
-            temp = String()
         }
-        //println(result)
         return result
     }
 
+    /**
+     * Gears are special characters with exactly two part numbers
+     */
     private fun findGears(list: List<NumberWithItsSpecialChar>): Map<CharacterWithIndexesAndRank, List<NumberWithItsSpecialChar>> {
         return list.groupBy { it.character }.filterValues { it.size == 2 }
     }

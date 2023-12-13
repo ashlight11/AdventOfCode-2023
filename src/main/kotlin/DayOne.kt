@@ -5,17 +5,26 @@ class DayOne (file : File) {
 
     fun compute() {
         var tab = baseFile.readLines().map { line -> replaceByDigits(line) }
+        // convert each line to a list of numbers
+        // method getFirstAndLastChar selects only first and last digit in the string
         tab = tab.map { line -> getFirstAndLastChar(line.filter{ it.isDigit()}) }
         println(tab.sumOf { it.toInt() })
     }
 
-    fun getFirstAndLastChar(input : String) : String {
+    /**
+     * Goes over characters in a list a digit to find the first and the last one
+     */
+    private fun getFirstAndLastChar(input : String) : String {
         val first = input[0].toString()
         val last = input[input.length-1].toString()
         return first.plus(last)
     }
 
-    fun replaceByDigits(input : String): String{
+    /**
+     * Replace written digits with equivalents containing the numeric version
+     * Attention to keep first and last characters as "twone" must be read as 2 and 1
+     */
+    private fun replaceByDigits(input : String): String{
         val regexOne = """one""".toRegex()
         val regexTwo = """two""".toRegex()
         val regexThree = """three""".toRegex()
@@ -34,36 +43,4 @@ class DayOne (file : File) {
 
         return output
     }
-
-
-    enum class Digits(val text : String) {
-        ONE("one"){
-            val value = 1
-        },
-        TWO("two"){
-            val value = 2
-        },
-        THREE("three"){
-            val value = 3
-        },
-        FOUR("four"){
-            val value = 4
-        },
-        FIVE("five"){
-            val value = 5
-        },
-        SIX("six"){
-            val value = 6
-        },
-        SEVEN("seven"){
-            val value = 7
-        },
-        EIGHT("eight"){
-            val value = 8
-        },
-        NINE("nine"){
-            val value = 9
-        }
-    }
-
 }
