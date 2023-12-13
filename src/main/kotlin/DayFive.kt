@@ -12,7 +12,6 @@ class DayFive(file: File) {
                 .filter { it.isNotBlank() }
         }
             .map { toTransformers(it) }
-            .map { toMapper(it) }
 
         val locations = seeds.map { computeLocation(it, groups) }
         println(locations)
@@ -54,7 +53,7 @@ class DayFive(file: File) {
     }
 
 
-    private fun computeDestination(source: Long, map: Map<Long, Long>): Long {
+    private fun computeDestinationMap(source: Long, map: Map<Long, Long>): Long {
         return if (map.containsKey(source)) {
             map[source]!!
         } else {
@@ -62,11 +61,31 @@ class DayFive(file: File) {
         }
     }
 
-    private fun computeLocation(source: Long, mappers: List<Map<Long, Long>>): Long {
+    private fun computeDestination(source: Long, transformers: List<Transformer>): Long {
+        var result = source
+        for (transformer in transformers) {
+            val sourceStart = transformer.sourceStart
+            if (source in sourceStart..<sourceStart + transformer.range) {
+                result = transformer.destinationStart + (source - sourceStart)
+            }
+        }
+        return result
+    }
+
+    private fun computeLocationMap(source: Long, mappers: List<Map<Long, Long>>): Long {
         println("compute location for seed $source")
         var temp = source
         for (mapper in mappers) {
-            temp = computeDestination(temp, mapper)
+            temp = computeDestinationMap(temp, mapper)
+        }
+        return temp
+    }
+
+    private fun computeLocation(source: Long, transformers: List<List<Transformer>>): Long {
+        println("compute location for seed $source")
+        var temp = source
+        for (transformer in transformers) {
+            temp = computeDestination(temp, transformer)
         }
         return temp
     }
