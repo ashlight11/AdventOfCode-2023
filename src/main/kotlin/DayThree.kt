@@ -9,9 +9,9 @@ class DayThree(file: File) {
             it.toCharArray()
         } // I chose to see the input as a matrix of characters
 
-        val allNumbers = findNumbersInCharArrayArray(charArrayArray) // find all the numbers and their positions in the matrix
+        val allNumbers = charArrayArray.findNumbers() // find all the numbers and their positions in the matrix
         val partNumbers = allNumbers.filter {
-            numberIsPart(it, charArrayArray)
+            it.numberIsPart(charArrayArray)
         }// extract only partNumbers
 
         partNumbers.forEach {
@@ -29,9 +29,9 @@ class DayThree(file: File) {
             it.toCharArray()
         } // I chose to see the input as a matrix of characters
 
-        val allNumbers = findNumbersInCharArrayArray(charArrayArray) // find all the numbers and their positions in the matrix
+        val allNumbers = charArrayArray.findNumbers() // find all the numbers and their positions in the matrix
         val partNumbersWithChars = allNumbers.mapNotNull {
-            numberIsPartWith(it, charArrayArray)
+            it.numberIsPartWith(charArrayArray)
         } // extract only partNumbers
 
         val gears = findGears(partNumbersWithChars)
@@ -47,12 +47,12 @@ class DayThree(file: File) {
      * A number is part if it is surrounded by a special character
      * My approach is to go over all the characters in the neighbourhood, hence the CharArray
      */
-    private fun numberIsPart(number: NumberWithIndexesAndRank, charArray: List<CharArray>): Boolean {
-        val minIndex = number.lowestIndex
-        val maxIndex = number.highestIndex
+    private fun NumberWithIndexesAndRank.numberIsPart(charArray: List<CharArray>): Boolean {
+        val minIndex = this.lowestIndex
+        val maxIndex = this.highestIndex
         val size = charArray.size
         val lineSize = charArray[0].size
-        val rank = number.rank
+        val rank = this.rank
         /*
         * j-1 : de imin - 1 à imax +1
         * j : imin -1 imin + 1
@@ -63,7 +63,7 @@ class DayThree(file: File) {
                 for (i in minIndex - 1..maxIndex + 1) {
                     if (i in 0..<lineSize) {
                         //println("ligne $j, colonne $i, valeur " + charArray[j][i])
-                        if (isSpecialCharacter(charArray[j][i])) {
+                        if (charArray[j][i].isSpecialCharacter()) {
                             //println(charArray[j][i])
                             return true
                         }
@@ -80,15 +80,14 @@ class DayThree(file: File) {
      * My approach is to go over all the characters in the neighbourhood, hence the CharArray
      * This function also groups a part number with which character makes it be a "part number"
      */
-    private fun numberIsPartWith(
-        number: NumberWithIndexesAndRank,
+    private fun NumberWithIndexesAndRank.numberIsPartWith(
         charArray: List<CharArray>
     ): NumberWithItsSpecialChar? {
-        val minIndex = number.lowestIndex
-        val maxIndex = number.highestIndex
+        val minIndex = this.lowestIndex
+        val maxIndex = this.highestIndex
         val size = charArray.size
         val lineSize = charArray[0].size
-        val rank = number.rank
+        val rank = this.rank
         /*
         * j-1 : de imin - 1 à imax +1
         * j : imin -1 imin + 1
@@ -99,11 +98,11 @@ class DayThree(file: File) {
                 for (i in minIndex - 1..maxIndex + 1) {
                     if (i in 0..<lineSize) {
                         //println("ligne $j, colonne $i, valeur " + charArray[j][i])
-                        if (isSpecialCharacter(charArray[j][i])) {
+                        if (charArray[j][i].isSpecialCharacter()) {
                             //println(charArray[j][i])
                             val character =
                                 CharacterWithIndexesAndRank(character = charArray[j][i], lineRank = j, index = i)
-                            return NumberWithItsSpecialChar(number, character)
+                            return NumberWithItsSpecialChar(this, character)
                         }
                     }
 
@@ -113,18 +112,18 @@ class DayThree(file: File) {
         return null
     }
 
-    private fun isSpecialCharacter(c: Char): Boolean {
-        return !c.isLetterOrDigit() && c != '.'
+    private fun Char.isSpecialCharacter(): Boolean {
+        return !this.isLetterOrDigit() && this != '.'
     }
 
     /**
      * Goes over each line in the global matrix to find numbers in it
      * @return all the numbers in the string as well as their absolute positions in the global matrix
      */
-    private fun findNumbersInCharArrayArray(charCharArray: List<CharArray>): List<NumberWithIndexesAndRank> {
+    private fun List<CharArray>.findNumbers(): List<NumberWithIndexesAndRank> {
         val result = emptyList<NumberWithIndexesAndRank>().toMutableList()
-        for ((index, charArray) in charCharArray.withIndex()) {
-            result += findNumbers(charArray, rank = index)
+        for ((index, charArray) in this.withIndex()) {
+            result += charArray.findNumbers(rank = index)
         }
         return result
     }
@@ -134,11 +133,11 @@ class DayThree(file: File) {
      * as well as their absolute positions in the global matrix.
      * @param rank is the number of the line in the matrix
      */
-    private fun findNumbers(charArray: CharArray, rank: Int): List<NumberWithIndexesAndRank> {
+    private fun CharArray.findNumbers(rank: Int): List<NumberWithIndexesAndRank> {
         var result: List<NumberWithIndexesAndRank> = emptyList<NumberWithIndexesAndRank>().toMutableList()
         var temp = String()
         //println("line $rank")
-        for ((i, c) in charArray.withIndex()) {
+        for ((i, c) in this.withIndex()) {
             //println("column $i")
             if (c.isDigit()) {
                 //println("character is digit $c, temp = $temp")
@@ -172,8 +171,8 @@ class DayThree(file: File) {
                 result.plus(
                     NumberWithIndexesAndRank(
                         value = temp.toInt(),
-                        lowestIndex = charArray.size - temp.length,
-                        highestIndex = charArray.size - 1,
+                        lowestIndex = this.size - temp.length,
+                        highestIndex = this.size - 1,
                         rank = rank
                     )
                 )

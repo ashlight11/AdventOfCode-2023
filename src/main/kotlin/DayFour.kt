@@ -13,7 +13,7 @@ class DayFour(file: File) {
 
         val games = baseGames.mapValues { Game(it.value) } // Transform the value to a "Game" object
 
-        val pointsPerGame = games.mapValues { calculatePointsPerGame(it.value) }
+        val pointsPerGame = games.mapValues { it.value.calculatePoints() }
         println(pointsPerGame)
 
         val sumOfPoints = pointsPerGame.map { it.value }.sumOf { it }
@@ -37,10 +37,10 @@ class DayFour(file: File) {
      * And each match after the first doubles the point value of that card.
      * Meaning 1 * 2 * 2 * 2... => 1 * 2.power(number of matches minus the first one)
      */
-    private fun calculatePointsPerGame(game: Game): Double {
+    private fun Game.calculatePoints(): Double {
         val two = 2.0
         // The numbers in common is the intersection of the two lists
-        val intersection = game.drawnNumbers.intersect(game.winningNumbers.toSet())
+        val intersection = this.drawnNumbers.intersect(this.winningNumbers.toSet())
 
         return if (intersection.isEmpty()) {
             0.0 // No point is awarded if there is no match
@@ -52,8 +52,8 @@ class DayFour(file: File) {
     /**
      * Each game awards one card for each match between winning and drawn numbers
      */
-    private fun additionalCardsPerGame(game: Game): Int {
-        val intersection = game.drawnNumbers.intersect(game.winningNumbers.toSet())
+    private fun Game.additionalCards(): Int {
+        val intersection = this.drawnNumbers.intersect(this.winningNumbers.toSet())
         return intersection.size
     }
 
@@ -65,7 +65,7 @@ class DayFour(file: File) {
         // The player starts with one card for each game
         val cardsOwned: MutableList<Int> = MutableList(games.size) { 1 }
         for (game in games) { // for each card
-            val cardsWon = additionalCardsPerGame(game.value) // the player wins some more
+            val cardsWon = game.value.additionalCards() // the player wins some more
             println("game " + (game.key) + " won $cardsWon cards ")
 
             val start = game.key + 1 // cards won will add up to the cards for the next games

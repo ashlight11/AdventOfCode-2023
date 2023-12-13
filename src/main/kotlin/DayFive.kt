@@ -26,7 +26,36 @@ class DayFive(file: File) {
 
     }
 
+    fun computePartTwo(){
+        val content = baseFile.readText().split("\n\r")
+        // extract seeds
+        val seeds = content[0].split(":")[1].split("\\s+".toRegex()).filter { it.isNotBlank() }.map { it.toLong() }
+        // create a sublist of maps => take away the seeds
+        val contentWithoutSeeds = content.subList(1, content.size)
+        // separate maps into groups
+        val groups = contentWithoutSeeds.map { string ->
+            // separate groups into lines
+            string.split(":")[1].split("\r")
+                .filter { it.isNotBlank() }
+        }
+            .map { toTransformers(it) } // map each line to a "Transformer" object
+
+        // compute location for each seed, based on all the maps (=groups)
+        /*val locations = computeLocationsFromSeedRanges(seeds.toSeedRanges(), groups)
+        //println(locations)
+
+        val minimumLocation = locations.min()
+        println("Minimum location is $minimumLocation")*/
+        val min = seeds.toSeedRanges().minimumLocation(groups)
+        println(min)
+    }
+
     data class Transformer(val sourceStart: Long, val destinationStart: Long, val range: Long)
+
+    data class SeedRange(val start: Long, val range : Long){
+        val end = start+range-1
+    }
+
 
     /**
      * Convert a string with a known format of "XXXXX XXX XXXX" with X : Digit to a Transformer
@@ -38,6 +67,44 @@ class DayFive(file: File) {
 
     private fun toTransformers(strings: List<String>): List<Transformer> {
         return strings.map { toTransformer(it) }
+    }
+
+    /**
+     * Convert the seeds into their corresponding ranges
+     */
+    private fun List<Long>.toSeedRanges() : List<SeedRange>{
+        var ranges = emptyList<SeedRange>()
+        for (i in this.indices step(2)){
+            ranges = ranges.plus(SeedRange(this[i], this[i+1]))
+        }
+        return ranges
+    }
+
+    private fun computeLocationsFromSeedRanges(seedRanges : List<SeedRange>, transformers: List<List<Transformer>>) : List<Long> {
+        var locations = emptyList<Long>()
+        for (seedRange in seedRanges){
+            println("start range")
+            for (seed in seedRange.start..seedRange.end){
+                locations = locations.plus(computeLocation(seed, transformers))
+            }
+            println("stop range")
+        }
+        return  locations
+    }
+
+    private fun List<SeedRange>.minimumLocation(transformers: List<List<Transformer>>) : Long{
+        var location = computeLocation(this[0].start, transformers)
+        for (seedRange in this){
+            println("start range")
+            for (seed in seedRange.start..seedRange.end){
+                val tempLocation = computeLocation(seed, transformers)
+                if(tempLocation < location){
+                    location = tempLocation
+                }
+            }
+            println("stop range")
+        }
+        return  location
     }
 
     /*
@@ -96,7 +163,7 @@ class DayFive(file: File) {
     Unused in final solution
      */
     private fun computeLocationMap(source: Long, mappers: List<Map<Long, Long>>): Long {
-        println("compute location for seed $source")
+        //println("compute location for seed $source")
         var temp = source
         for (mapper in mappers) {
             temp = computeDestinationMap(temp, mapper)
@@ -112,7 +179,7 @@ class DayFive(file: File) {
      * @return The result of all the transformations
      */
     private fun computeLocation(source: Long, transformers: List<List<Transformer>>): Long {
-        println("compute location for seed $source")
+        //println("compute location for seed $source")
         var temp = source
         for (transformer in transformers) {
             temp = computeDestination(temp, transformer)
