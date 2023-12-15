@@ -3,9 +3,10 @@ import kotlin.math.*
 
 
 class DaySix (file : File) {
-    private val records = file.readText().generateRecords()
+    private val recordsFile = file.readText()
 
     fun computePartOne(){
+        val records = recordsFile.generateRecords()
         val waysToWin = records.map { it.countWaysToWin() }
         val multiplication = waysToWin.reduce { acc, num -> acc * num }
         for(value in waysToWin){
@@ -15,7 +16,9 @@ class DaySix (file : File) {
 
     }
     fun computePartTwo(){
-
+        val record = recordsFile.generateRecord()
+        val waysToWin = record.countWaysToWin()
+        println(waysToWin)
     }
 
     private fun Record.countWaysToWin() : Long {
@@ -36,6 +39,13 @@ class DaySix (file : File) {
         val distances = lines[1].split("[:\\s]+".toRegex()).filter { it.toIntOrNull() != null }
         val records = times.zip(distances).map { Record(duration = it.first.toDouble(), distance = it.second.toDouble()) }
         return records
+    }
+
+    private fun String.generateRecord() : Record {
+        val lines = this.split("\r\n")
+        val time = lines[0].filter { it.isDigit() }.toDouble()
+        val distance = lines[1].filter { it.isDigit() }.toDouble()
+        return Record(time, distance)
     }
 
     data class Record(val duration : Double, val distance : Double)
