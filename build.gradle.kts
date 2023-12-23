@@ -13,10 +13,11 @@ repositories {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
 }
 
-tasks.test {
+tasks.withType<Test> {
     useJUnitPlatform()
 }
 

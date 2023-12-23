@@ -141,11 +141,7 @@ class DayThree(file: File) {
             //println("column $i")
             if (c.isDigit()) {
                 //println("character is digit $c, temp = $temp")
-                if (temp.isEmpty()) {
-                    temp = c.toString()
-                } else {
-                    temp += c.toString()
-                }
+                temp += c.toString()
                 //println("now, temp is $temp")
             } else {
                 //println("character is not digit $c, temp = $temp")
@@ -187,7 +183,7 @@ class DayThree(file: File) {
         return list.groupBy { it.character }.filterValues { it.size == 2 }
     }
 
-    private fun sumOfGears(gears : Map<CharacterWithIndexesAndRank, List<NumberWithItsSpecialChar>>) : Int {
+    private fun sumOfGears(gears: Map<CharacterWithIndexesAndRank, List<NumberWithItsSpecialChar>>): Int {
         val gearValues = gears.values.map { it[0].value.value * it[1].value.value }
         return gearValues.sumOf { it }
     }
