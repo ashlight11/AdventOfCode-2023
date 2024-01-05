@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test
 
 class DaySevenTest {
 
-    private val hand1 = Hand("QJJQ2", false)
-    private val hand1_J = Hand("QJJQ2", true)
+    private val hand1J = Hand("JKKK2", true) // weaker
+    private val hand1 = Hand("QQQQ2", true)
     val input = """
         32T3K 765
         T55J5 684
@@ -26,9 +26,10 @@ class DaySevenTest {
     private val h5 = Hand("QQQJA", false).toSubClass()
     private val b5 = 483
 
+
     @Test
     fun `P1 should find card type`() {
-        hand1.toSubClass().shouldBeInstanceOf<TwoPair>()
+        hand1.toSubClass().shouldBeInstanceOf<FourOfAKind>()
     }
 
     @Test
@@ -51,7 +52,7 @@ class DaySevenTest {
 
     @Test
     fun `P2 should find card type`() {
-        hand1_J.toSubClass().shouldBeInstanceOf<FourOfAKind>()
+        hand1J.toSubClass().shouldBeInstanceOf<FourOfAKind>()
     }
 
     @Test
@@ -72,6 +73,11 @@ class DaySevenTest {
         val mapOfHands = lines.toMapOfHands(withJokers = true)
         val bidWon = AllHands(mapOfHands).totalBids()
         bidWon.shouldBeEqual(5905L)
+    }
+
+    @Test
+    fun `should compare with Jokers`(){
+        val comparison = handComparator.compare(hand1, hand1J).shouldBeEqual(1)
     }
 
 

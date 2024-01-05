@@ -1,21 +1,25 @@
 import java.io.File
 
 class DayFive(file: File) {
-    val baseFile = file
+    private val baseFile = file
 
     fun computePartOne() {
         val content = baseFile.readText().split("\n\r")
         // extract seeds
-        val seeds = content[0].split(":")[1].split("\\s+".toRegex()).filter { it.isNotBlank() }.map { it.toLong() }
+        val seeds = content[0].split(":")[1]
+            .split("\\s+".toRegex())
+            .filter { it.isNotBlank() }
+            .map { it.toLong() }
         // create a sublist of maps => take away the seeds
         val contentWithoutSeeds = content.subList(1, content.size)
         // separate maps into groups
         val groups = contentWithoutSeeds.map { string ->
             // separate groups into lines
-            string.split(":")[1].split("\r")
+            string.split(":")[1]
+                .split("\r")
                 .filter { it.isNotBlank() }
         }
-            .map { toTransformers(it) } // map each line to a "Transformer" object
+            .map { it.toTransformers() } // map each line to a "Transformer" object
 
         // compute location for each seed, based on all the maps (=groups)
         val locations = seeds.map { computeLocation(it, groups) }
@@ -35,10 +39,11 @@ class DayFive(file: File) {
         // separate maps into groups
         val groups = contentWithoutSeeds.map { string ->
             // separate groups into lines
-            string.split(":")[1].split("\r")
+            string.split(":")[1]
+                .split("\r")
                 .filter { it.isNotBlank() }
         }
-            .map { toTransformers(it) } // map each line to a "Transformer" object
+            .map { it.toTransformers() } // map each line to a "Transformer" object
 
         // compute location for each seed, based on all the maps (=groups)
         /*val locations = computeLocationsFromSeedRanges(seeds.toSeedRanges(), groups)
@@ -46,6 +51,7 @@ class DayFive(file: File) {
 
         val minimumLocation = locations.min()
         println("Minimum location is $minimumLocation")*/
+
         val min = seeds.toSeedRanges().minimumLocation(groups)
         println(min)
     }
@@ -60,13 +66,15 @@ class DayFive(file: File) {
     /**
      * Convert a string with a known format of "XXXXX XXX XXXX" with X : Digit to a Transformer
      */
-    private fun toTransformer(string: String): Transformer {
-        val elements = string.split("\\s+".toRegex()).filter { it.isNotEmpty() }.map { it.toLong() }
+    private fun String.toTransformer(): Transformer {
+        val elements = this.split("\\s+".toRegex())
+            .filter { it.isNotEmpty() }
+            .map { it.toLong() }
         return Transformer(sourceStart = elements[1], destinationStart = elements[0], range = elements[2])
     }
 
-    private fun toTransformers(strings: List<String>): List<Transformer> {
-        return strings.map { toTransformer(it) }
+    private fun List<String>.toTransformers(): List<Transformer> {
+        return this.map { it.toTransformer() }
     }
 
     /**
