@@ -66,18 +66,29 @@ open class Hand(val input: String, val withJokers: Boolean) {
                 }
             }
             3 -> {
+                // 32422 : Three Of A Kind
+                // J3331 : TOF, avec Joker : Four
+                // 87J78 : Two Pair, avec Joker : Full House
+                // JJ887 : Two Pair, avec Joker : Four
+
                 val countJs = input.count { it == 'J' }
-                return if (shouldLevelUp) {
-                    if(countJs == 1){
-                        FullHouse(input, true)
-                    } else {
+                return if(charMap.containsValue(3)) {
+                    if(shouldLevelUp){
                         FourOfAKind(input, true)
+                    } else {
+                        ThreeOfAKind(input, withJokers)
                     }
-                } else if(charMap.containsValue(3)) {
-                    ThreeOfAKind(input, withJokers)
                 }
                 else {
-                    TwoPair(input, withJokers)
+                    if (shouldLevelUp){
+                        if(countJs > 1){
+                            FourOfAKind(input, true)
+                        } else {
+                            FullHouse(input, true)
+                        }
+                    } else {
+                        TwoPair(input, withJokers)
+                    }
                 }
             }
             4 -> return if(shouldLevelUp){
