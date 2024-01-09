@@ -25,24 +25,50 @@ class DayEightTest {
 
     val secondInput = Input(secondInputAsText)
 
+    private val inputForGhostsAsText =
+        "LR\n" +
+            "\n" +
+            "11A = (11B, XXX)\r\n" +
+            "11B = (XXX, 11Z)\r\n" +
+            "11Z = (11B, XXX)\r\n" +
+            "22A = (22B, XXX)\r\n" +
+            "22B = (22C, 22C)\r\n" +
+            "22C = (22Z, 22Z)\r\n" +
+            "22Z = (22B, 22B)\r\n" +
+            "XXX = (XXX, XXX)"
+
+    private val inputForGhosts = Input(inputForGhostsAsText)
+
     @Test
     fun `should parse nodes as a map`() {
-        val nodesMap = input.nodesAsText.parseAsNodesMap()
-        nodesMap.forEach {
+        input.nodesMap.forEach {
             println(it)
         }
     }
 
     @Test
     fun `should find number of iterations`(){
-        val nodesMap = input.nodesAsText.parseAsNodesMap()
-        input.readInstructions(nodesMap).shouldBeEqual(2)
+        input.readInstructions("AAA").shouldBeEqual(2)
     }
 
     @Test
     fun `should find number of iterations for second input`(){
-        val nodesMap = secondInput.nodesAsText.parseAsNodesMap()
-        secondInput.readInstructions(nodesMap).shouldBeEqual(6)
+        secondInput.readInstructions("AAA").shouldBeEqual(6)
+    }
+
+    @Test
+    fun countNodesThatStartWithA(){
+        println(input.nodesMap.count { it.key.startsWith('A') })
+    }
+
+    @Test
+    fun `should count iterations for ghosts`(){
+        inputForGhosts.readInstructionsForGhosts().shouldBeEqual(6)
+    }
+
+    @Test
+    fun `should count iterations for ghosts, but better`(){
+        inputForGhosts.readInstructionsForGhostsButBetter().shouldBeEqual(6)
     }
 
 }
