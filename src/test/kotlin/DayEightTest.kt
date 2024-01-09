@@ -24,13 +24,6 @@ class DayEightTest {
                 "ZZZ = (ZZZ, ZZZ)"
 
     val secondInput = Input(secondInputAsText)
-    @Test
-    fun `should parse nodes`() {
-        val nodes = input.nodesAsText.parseAsNodes()
-        nodes.forEach {
-            println(it)
-        }
-    }
 
     @Test
     fun `should parse nodes as a map`() {
