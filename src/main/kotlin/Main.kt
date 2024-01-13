@@ -1,9 +1,9 @@
 import java.io.File
 
 fun main(args: Array<String>) {
-    val url = object {}.javaClass.getResource("day08.txt")
+    val url = object {}.javaClass.getResource("day09.txt")
     val file = File(url!!.toURI())
-    val day = DayEight(file)
+    val day = DayNine(file)
     day.computePartTwo()
 }
 

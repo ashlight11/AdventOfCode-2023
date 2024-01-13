@@ -62,11 +62,6 @@ class DayEightTest {
     }
 
     @Test
-    fun `should count iterations for ghosts`(){
-        inputForGhosts.readInstructionsForGhosts().shouldBeEqual(6)
-    }
-
-    @Test
     fun `should count iterations for ghosts, but better`(){
         inputForGhosts.readInstructionsForGhostsButBetter().shouldBeEqual(6)
     }
