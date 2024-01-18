@@ -1,11 +1,13 @@
 import java.io.File
 
-val ERROR_PAIR = Pair(Point(-1,-1), PipePart('?'))
+val ERROR_PAIR = Pair(Point(-1, -1), PipePart('?'))
 
 fun main() {
-    val url = object {}.javaClass.getResource("day09.txt")
+    val url = object {}.javaClass.getResource("day10.txt")
     val file = File(url!!.toURI())
     val field = file.readText().parse()
+    val loopSize = field.findLoopSize()
+    println("size $loopSize")
 
 }
 
@@ -17,8 +19,49 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
     }
 
     fun getStartingPoint(): Pair<Point, PipePart> {
-        val result = pipes.firstNotNullOfOrNull { it.takeIf { it.value.value == 'S' }}?.toPair()
-        result?.let { return it } ?: return ERROR_PAIR
+        val result = pipes.firstNotNullOfOrNull { it.takeIf { it.value.value == 'S' } }
+        result?.let {
+            val possibleDirections = getPossibleDirectionForStartingPoint(it.key)
+            it.value.listOfConnections = possibleDirections
+            pipes[it.key] = it.value
+            return it.toPair()
+        }
+            ?: return ERROR_PAIR
+    }
+
+    /**
+     * S can have different directions depending on its neighbours
+     * [0,1] : if contains NORTH -> SOUTH is possible
+     * [0,-1] : if contains SOUTH -> NORTH is possible
+     * [1,0] : if contains WEST -> EAST is possible
+     * [-1,0] : if contains EAST -> WEST is possible
+     */
+    fun getPossibleDirectionForStartingPoint(startingPoint: Point): List<Directions> {
+        var directions: List<Directions> = emptyList()
+        val x = startingPoint.x
+        val y = startingPoint.y
+        pipes[Point(x, y - 1)]?.let {
+            if (it.listOfConnections.contains(Directions.SOUTH)) {
+                directions = directions.plus(Directions.NORTH)
+            }
+        }
+        pipes[Point(x, y + 1)]?.let {
+            if (it.listOfConnections.contains(Directions.NORTH)) {
+                directions = directions.plus(Directions.SOUTH)
+            }
+        }
+        pipes[Point(x - 1, y)]?.let {
+            if (it.listOfConnections.contains(Directions.EAST)) {
+                directions = directions.plus(Directions.WEST)
+            }
+        }
+        pipes[Point(x + 1, y)]?.let {
+            if (it.listOfConnections.contains(Directions.WEST)) {
+                directions = directions.plus(Directions.EAST)
+            }
+        }
+        return directions
+
     }
 
     /**
@@ -33,17 +76,69 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
      *      WEST : [-1,0] has EAST ? add node [-1,0]
      */
     fun getAdjacentPipes(pipePart: Pair<Point, PipePart>): Map<Point, PipePart> {
-        val adjacentPipes : Map<Point, PipePart> = pipePart.second.listOfConnections.fold(emptyMap()) { currentMap, direction ->
-            val x = pipePart.first.x
-            val y = pipePart.first.y
-            var map: Map<Point, PipePart> = emptyMap()
+        val adjacentPipes: Map<Point, PipePart> =
+            pipePart.second.listOfConnections.fold(emptyMap()) { currentMap, direction ->
+                val x = pipePart.first.x
+                val y = pipePart.first.y
+                var map: Map<Point, PipePart> = emptyMap()
+                when (direction) {
+                    Directions.NORTH -> {
+                        val northPoint = Point(x, y - 1)
+                        val northPipePart = this.pipes[northPoint]
+                        if (northPipePart != null) {
+                            if (northPipePart.listOfConnections.contains(Directions.SOUTH)) {
+                                map = mapOf(Pair(northPoint, northPipePart))
+                            }
+                        }
+                    }
+
+                    Directions.SOUTH -> {
+                        val southPoint = Point(x, y + 1)
+                        val southPipePart = this.pipes[southPoint]
+                        if (southPipePart != null) {
+                            if (southPipePart.listOfConnections.contains(Directions.NORTH)) {
+                                map = mapOf(southPoint to southPipePart)
+                            }
+                        }
+                    }
+
+                    Directions.EAST -> {
+                        val eastPoint = Point(x + 1, y)
+                        val eastPipePart = this.pipes[eastPoint]
+                        if (eastPipePart != null) {
+                            if (eastPipePart.listOfConnections.contains(Directions.WEST)) {
+                                map = mapOf(eastPoint to eastPipePart)
+                            }
+                        }
+                    }
+
+                    else -> {
+                        val westPoint = Point(x - 1, y)
+                        val westPipePart = this.pipes[westPoint]
+                        if (westPipePart != null) {
+                            if (westPipePart.listOfConnections.contains(Directions.EAST)) {
+                                map = mapOf(westPoint to westPipePart)
+                            }
+                        }
+                    }
+                }
+                currentMap.plus(map)
+            }
+        return adjacentPipes
+    }
+
+    fun getAdjacentPoints(pipePart: Pair<Point, PipePart>): Map<Point, PipePart> {
+        val x = pipePart.first.x
+        val y = pipePart.first.y
+        val resultingMap: MutableMap<Point, PipePart> = emptyMap<Point, PipePart>().toMutableMap()
+        pipePart.second.listOfConnections.forEach { direction ->
             when (direction) {
                 Directions.NORTH -> {
                     val northPoint = Point(x, y - 1)
                     val northPipePart = this.pipes[northPoint]
                     if (northPipePart != null) {
                         if (northPipePart.listOfConnections.contains(Directions.SOUTH)) {
-                            map = mapOf(Pair(northPoint, northPipePart))
+                            resultingMap[northPoint] = northPipePart
                         }
                     }
                 }
@@ -53,7 +148,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                     val southPipePart = this.pipes[southPoint]
                     if (southPipePart != null) {
                         if (southPipePart.listOfConnections.contains(Directions.NORTH)) {
-                            map = mapOf(southPoint to southPipePart)
+                            resultingMap[southPoint] = southPipePart
                         }
                     }
                 }
@@ -63,7 +158,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                     val eastPipePart = this.pipes[eastPoint]
                     if (eastPipePart != null) {
                         if (eastPipePart.listOfConnections.contains(Directions.WEST)) {
-                            map = mapOf(eastPoint to eastPipePart)
+                            resultingMap[eastPoint] = eastPipePart
                         }
                     }
                 }
@@ -73,14 +168,13 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                     val westPipePart = this.pipes[westPoint]
                     if (westPipePart != null) {
                         if (westPipePart.listOfConnections.contains(Directions.EAST)) {
-                            map = mapOf(westPoint to westPipePart)
+                            resultingMap[westPoint] = westPipePart
                         }
                     }
                 }
             }
-            currentMap.plus(map)
         }
-        return adjacentPipes
+        return resultingMap
     }
 
 
@@ -102,8 +196,52 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
      *
      */
 
-    fun findLoop() {
+    fun findLoopSize(): Int {
+        val startingPipe = getStartingPoint()
+        val visitedPoints = emptyList<Point>().toMutableList()
+        var loopSizes: IntArray = intArrayOf()
+        visitedPoints.add(startingPipe.first)
 
+        val adjacentPoints = getAdjacentPoints(startingPipe).iterator()
+        while (adjacentPoints.hasNext()) {
+            val currentPoint = adjacentPoints.next()
+            //visitedPoints.add(currentPoint.key)
+            println("going for $currentPoint")
+            val loopSize = exploreMap(startingPipe.first, currentPoint.toPair(), visitedPoints, 0)
+            //println("adding $loopSize")
+            if (loopSize != 0) {
+                loopSizes = loopSizes.plus(loopSize)
+                visitedPoints.remove(currentPoint.key)
+            } else {
+                visitedPoints.remove(currentPoint.key)
+            }
+        }
+        return loopSizes.max()
+    }
+
+    fun exploreMap(
+        parentPoint: Point,
+        currentPoint: Pair<Point, PipePart>,
+        visitedPoints: MutableList<Point>,
+        loopSize: Int
+    ): Int {
+        val adjacentPoints = getAdjacentPoints(currentPoint).iterator()
+        visitedPoints.add(currentPoint.first)
+        while (adjacentPoints.hasNext()) {
+            val current = adjacentPoints.next()
+            val wasVisited = visitedPoints.contains(current.key)
+            //println("step $loopSize, current $current, is contained : $wasVisited")
+            if (!wasVisited) {
+                exploreMap(parentPoint, current.toPair(), visitedPoints, loopSize + 1)
+                println("step $loopSize, $current")
+                //println(visitedPoints)
+                break;
+            } else if (current.key != currentPoint.first && current.key == parentPoint && loopSize != 0) {
+                //println("found start and visited : $visitedPoints")
+                return visitedPoints.size
+            }
+        }
+        return visitedPoints.size
     }
 }
 
