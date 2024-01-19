@@ -6,12 +6,14 @@ fun main() {
     val url = object {}.javaClass.getResource("day10.txt")
     val file = File(url!!.toURI())
     val field = file.readText().parse()
-    val loopSize = field.findLoopSize()
+    val loopSize = field.findPath()
     println("size $loopSize")
+
 
 }
 
 data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
+
 
     fun addPipe(point: Point, pipePart: PipePart): PipeField {
         pipes[point] = pipePart
@@ -62,6 +64,55 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
         }
         return directions
 
+    }
+
+    fun findPath() : Int {
+        val startingPoint = getStartingPoint()
+        val adjacentPoints = getAdjacentPoints(startingPoint)
+        var current = adjacentPoints[0]
+        val invertedDirectionsForStartingPoints = startingPoint.second.listOfConnections.map {
+            when(it){
+                Directions.NORTH -> Directions.SOUTH
+                Directions.SOUTH -> Directions.NORTH
+                Directions.EAST -> Directions.WEST
+                Directions.WEST -> Directions.EAST
+            }
+        }
+        var incomingDirection = pipes[current]!!.listOfConnections.intersect(invertedDirectionsForStartingPoints.toSet()).first()
+        var loopSize = 0
+        while (current != startingPoint.first) {
+            val result = goToNext(current, incomingDirection)
+            current = result.first
+            incomingDirection = result.second
+            loopSize++
+        }
+        return loopSize + 1
+    }
+
+    private fun goToNext(currentPoint: Point, incomingDirection: Directions): Pair<Point, Directions> {
+        println("current Pipe " + pipes[currentPoint]!! + "came from $incomingDirection" )
+        val x = currentPoint.x
+        val y = currentPoint.y
+
+        val remainingDirection = pipes[currentPoint]!!.listOfConnections.minus(incomingDirection).first()
+        println("let's go $remainingDirection" )
+        return when (remainingDirection) {
+            Directions.NORTH -> {
+                Point(x, y - 1) to Directions.SOUTH
+            }
+
+            Directions.SOUTH -> {
+                Point(x, y + 1) to Directions.NORTH
+            }
+
+            Directions.EAST -> {
+                Point(x + 1, y) to Directions.WEST
+            }
+
+            Directions.WEST -> {
+                Point(x - 1, y) to Directions.EAST
+            }
+        }
     }
 
     /**
@@ -127,10 +178,10 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
         return adjacentPipes
     }
 
-    fun getAdjacentPoints(pipePart: Pair<Point, PipePart>): Map<Point, PipePart> {
+    fun getAdjacentPoints(pipePart: Pair<Point, PipePart>): List<Point> {
         val x = pipePart.first.x
         val y = pipePart.first.y
-        val resultingMap: MutableMap<Point, PipePart> = emptyMap<Point, PipePart>().toMutableMap()
+        val resultingList: MutableList<Point> = emptyList<Point>().toMutableList()
         pipePart.second.listOfConnections.forEach { direction ->
             when (direction) {
                 Directions.NORTH -> {
@@ -138,7 +189,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                     val northPipePart = this.pipes[northPoint]
                     if (northPipePart != null) {
                         if (northPipePart.listOfConnections.contains(Directions.SOUTH)) {
-                            resultingMap[northPoint] = northPipePart
+                            resultingList.add(northPoint)
                         }
                     }
                 }
@@ -148,7 +199,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                     val southPipePart = this.pipes[southPoint]
                     if (southPipePart != null) {
                         if (southPipePart.listOfConnections.contains(Directions.NORTH)) {
-                            resultingMap[southPoint] = southPipePart
+                            resultingList.add(southPoint)
                         }
                     }
                 }
@@ -158,7 +209,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                     val eastPipePart = this.pipes[eastPoint]
                     if (eastPipePart != null) {
                         if (eastPipePart.listOfConnections.contains(Directions.WEST)) {
-                            resultingMap[eastPoint] = eastPipePart
+                            resultingList.add(eastPoint)
                         }
                     }
                 }
@@ -168,13 +219,13 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                     val westPipePart = this.pipes[westPoint]
                     if (westPipePart != null) {
                         if (westPipePart.listOfConnections.contains(Directions.EAST)) {
-                            resultingMap[westPoint] = westPipePart
+                            resultingList.add(westPoint)
                         }
                     }
                 }
             }
         }
-        return resultingMap
+        return resultingList
     }
 
 
@@ -202,41 +253,55 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
         var loopSizes: IntArray = intArrayOf()
         visitedPoints.add(startingPipe.first)
 
-        val adjacentPoints = getAdjacentPoints(startingPipe).iterator()
-        while (adjacentPoints.hasNext()) {
-            val currentPoint = adjacentPoints.next()
+        val adjacentPoints = getAdjacentPoints(startingPipe)
+        for (currentPoint in adjacentPoints) {
             //visitedPoints.add(currentPoint.key)
             println("going for $currentPoint")
-            val loopSize = exploreMap(startingPipe.first, currentPoint.toPair(), visitedPoints, 0)
+            val loopSize = exploreMap(startingPipe.first, currentPoint, visitedPoints, 0)
             //println("adding $loopSize")
             if (loopSize != 0) {
                 loopSizes = loopSizes.plus(loopSize)
-                visitedPoints.remove(currentPoint.key)
+                //visitedPoints.remove(currentPoint)
             } else {
-                visitedPoints.remove(currentPoint.key)
+                //visitedPoints.remove(currentPoint)
             }
         }
         return loopSizes.max()
     }
+    /*
+            while (adjacentPoints.hasNext()) {
+            val currentPoint = adjacentPoints.next()
+            //visitedPoints.add(currentPoint.key)
+            println("going for $currentPoint")
+            val loopSize = exploreMap(startingPipe.first, currentPoint, visitedPoints, 0)
+            //println("adding $loopSize")
+            if (loopSize != 0) {
+                loopSizes = loopSizes.plus(loopSize)
+                //visitedPoints.remove(currentPoint)
+            } else {
+                //visitedPoints.remove(currentPoint)
+            }
+        }
+     */
 
-    fun exploreMap(
+    private fun exploreMap(
         parentPoint: Point,
-        currentPoint: Pair<Point, PipePart>,
+        currentPoint: Point,
         visitedPoints: MutableList<Point>,
         loopSize: Int
     ): Int {
-        val adjacentPoints = getAdjacentPoints(currentPoint).iterator()
-        visitedPoints.add(currentPoint.first)
-        while (adjacentPoints.hasNext()) {
-            val current = adjacentPoints.next()
-            val wasVisited = visitedPoints.contains(current.key)
+        val adjacentPoints = getAdjacentPoints(currentPoint to pipes[currentPoint]!!)
+        visitedPoints.add(currentPoint)
+        //adjacentPoints.forEach { println(it) }
+        for (current in adjacentPoints) {
+            val wasVisited = visitedPoints.contains(current)
             //println("step $loopSize, current $current, is contained : $wasVisited")
             if (!wasVisited) {
-                exploreMap(parentPoint, current.toPair(), visitedPoints, loopSize + 1)
+                exploreMap(parentPoint, current, visitedPoints, loopSize + 1)
                 println("step $loopSize, $current")
                 //println(visitedPoints)
                 break;
-            } else if (current.key != currentPoint.first && current.key == parentPoint && loopSize != 0) {
+            } else if (current != currentPoint && current == parentPoint && loopSize > 2) {
                 //println("found start and visited : $visitedPoints")
                 return visitedPoints.size
             }
@@ -244,6 +309,23 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
         return visitedPoints.size
     }
 }
+
+/*
+while (adjacentPoints.hasNext()) {
+            val current = adjacentPoints.next()
+            val wasVisited = visitedPoints.contains(current)
+            //println("step $loopSize, current $current, is contained : $wasVisited")
+            if (!wasVisited) {
+                exploreMap(parentPoint, current, visitedPoints, loopSize + 1)
+                println("step $loopSize, $current")
+                //println(visitedPoints)
+                break;
+            } else if (current != currentPoint && current == parentPoint && loopSize>2) {
+                //println("found start and visited : $visitedPoints")
+                return visitedPoints.size
+            }
+        }
+ */
 
 /*
 Version Marianne
@@ -267,16 +349,6 @@ fun String.parse(): PipeField {
             val y = column / width
             currentPipe.addPipe(Point(x, y), PipePart(char).toSubclass())
         }
-}
-
-fun String.toPipePartLocated(lineIndex: Int): Map<Point, PipePart> {
-    return this.mapIndexed { index, char -> Point(index, lineIndex) to PipePart(value = char) }.toMap()
-}
-
-data class PipePartLocated(val pipePart: PipePart, val point: Point) {
-    override fun toString(): String {
-        return "$pipePart at $point"
-    }
 }
 
 data class Point(val x: Int, val y: Int) {

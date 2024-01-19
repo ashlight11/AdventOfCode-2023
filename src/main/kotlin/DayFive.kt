@@ -115,38 +115,6 @@ class DayFive(file: File) {
         return  location
     }
 
-    /*
-    Does not work for bigger numbers... not efficient, too much memory needed
-     */
-    private fun toMapper(list: List<Transformer>): Map<Long, Long> {
-        println("converting to Mapper")
-        var longMap: Map<Long, Long> = emptyMap<Long, Long>()
-        for (element in list) {
-            val source = element.sourceStart
-            val range = element.range
-            val destination = element.destinationStart
-            for (i in source..<source + range) {
-                val newValue = mapOf(i to (destination + (i - source)))
-                //println(newValue)
-                longMap = longMap.plus(newValue)
-            }
-        }
-        println("done")
-        return longMap
-    }
-
-
-    /*
-    Unused in final solution
-     */
-    private fun computeDestinationMap(source: Long, map: Map<Long, Long>): Long {
-        return if (map.containsKey(source)) {
-            map[source]!!
-        } else {
-            source
-        }
-    }
-
     /**
      * Calculate output with, as inputs, a source value and a list of transformations possible
      * @param source : The initial value to transform
@@ -167,17 +135,6 @@ class DayFive(file: File) {
         return result
     }
 
-    /*
-    Unused in final solution
-     */
-    private fun computeLocationMap(source: Long, mappers: List<Map<Long, Long>>): Long {
-        //println("compute location for seed $source")
-        var temp = source
-        for (mapper in mappers) {
-            temp = computeDestinationMap(temp, mapper)
-        }
-        return temp
-    }
 
     /**
      * Chain all the destination calculations for a given source = seed.

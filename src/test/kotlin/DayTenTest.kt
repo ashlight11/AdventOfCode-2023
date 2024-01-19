@@ -43,6 +43,12 @@ class DayTenTest {
     }
 
     @Test
+    fun `should find loop size on obfuscated input, new version`(){
+        val testField = obfuscatedTestInput.parse()
+        testField.findPath().shouldBe(16)
+    }
+
+    @Test
     fun `should find possible directions for S`(){
         val startingPoint = field.getStartingPoint()
         field.getPossibleDirectionForStartingPoint(startingPoint.first).shouldBe(listOf(Directions.SOUTH, Directions.EAST))
