@@ -1,4 +1,6 @@
 import java.io.File
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 val ERROR_PAIR = Pair(Point(-1, -1), PipePart('?'))
 
@@ -6,14 +8,14 @@ fun main() {
     val url = object {}.javaClass.getResource("day10.txt")
     val file = File(url!!.toURI())
     val field = file.readText().parse()
-    val loopSize = field.findPath()
-    println("size $loopSize")
+    val (loopSize, pointsInLoop) = field.findPath()
+    println("size " + loopSize / 2)
 
-
+    val pointsEnclosed = applyPick(shoelaceArea(pointsInLoop), loopSize)
+    println("points enclosed $pointsEnclosed")
 }
 
 data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
-
 
     fun addPipe(point: Point, pipePart: PipePart): PipeField {
         pipes[point] = pipePart
@@ -66,36 +68,80 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
 
     }
 
-    fun findPath() : Int {
+    fun findPath(): Pair<Int, List<Point>> {
         val startingPoint = getStartingPoint()
         val adjacentPoints = getAdjacentPoints(startingPoint)
         var current = adjacentPoints[0]
+        var pointsOnPath: List<Point> = listOf(startingPoint.first, current)
         val invertedDirectionsForStartingPoints = startingPoint.second.listOfConnections.map {
-            when(it){
+            when (it) {
                 Directions.NORTH -> Directions.SOUTH
                 Directions.SOUTH -> Directions.NORTH
                 Directions.EAST -> Directions.WEST
                 Directions.WEST -> Directions.EAST
             }
         }
-        var incomingDirection = pipes[current]!!.listOfConnections.intersect(invertedDirectionsForStartingPoints.toSet()).first()
+        var incomingDirection =
+            pipes[current]!!.listOfConnections.intersect(invertedDirectionsForStartingPoints.toSet()).first()
         var loopSize = 0
         while (current != startingPoint.first) {
             val result = goToNext(current, incomingDirection)
             current = result.first
             incomingDirection = result.second
+            pointsOnPath = pointsOnPath.plus(current)
             loopSize++
         }
-        return loopSize + 1
+        return loopSize + 1 to pointsOnPath
     }
 
+    /**
+     * Starting just under the first line with a pipe present and stopping just before the last one
+     * result = 0
+     * for each line
+     *    find points not in loop and count how many times it crosses a border
+     *    if even -> not in
+     *    if odd -> in
+     */
+    // Unused in final solution, buggy but never figured out why, so I switched to mathematics
+    fun findEnclosedPoints(list: List<Point>): Int {
+        var result = 0
+        val xRange = list.minOf { it.x }..list.maxOf { it.x }
+        val yRange = list.minOf { it.y }..list.maxOf { it.y }
+        val keysRange = this.pipes.keys.filter { it.x in xRange && it.y in yRange }
+
+        for (point in keysRange) {
+            if (point !in list) {
+                val pointsInLoopOnLine = list
+                    .filter { it.x >= point.x && it.y == point.y && this.pipes[it] !is HorizontalPipe }
+                    .sortedBy { it.x }
+                    .associateWith { this.pipes[it] ?: Ground('.') }
+
+                val window = pointsInLoopOnLine.values.windowed(2, 1, partialWindows = true)
+
+                val count = window
+                    .count {
+                        (it.first() is VerticalPipe
+                                || (it.toStrings() == "F, J") // FJ
+                                || (it.toStrings() == "L, 7") // L7
+                                )
+                    }
+                //if (count % 2 == 1) {
+                //println(this.pipes[point].toString() + " at $point with $window and $count")
+                //}
+                result += count % 2
+            }
+        }
+        return result
+    }
+
+
     private fun goToNext(currentPoint: Point, incomingDirection: Directions): Pair<Point, Directions> {
-        println("current Pipe " + pipes[currentPoint]!! + "came from $incomingDirection" )
+        //println("current Pipe " + pipes[currentPoint]!! + "came from $incomingDirection" )
         val x = currentPoint.x
         val y = currentPoint.y
 
         val remainingDirection = pipes[currentPoint]!!.listOfConnections.minus(incomingDirection).first()
-        println("let's go $remainingDirection" )
+        //println("let's go $remainingDirection" )
         return when (remainingDirection) {
             Directions.NORTH -> {
                 Point(x, y - 1) to Directions.SOUTH
@@ -178,7 +224,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
         return adjacentPipes
     }
 
-    fun getAdjacentPoints(pipePart: Pair<Point, PipePart>): List<Point> {
+    private fun getAdjacentPoints(pipePart: Pair<Point, PipePart>): List<Point> {
         val x = pipePart.first.x
         val y = pipePart.first.y
         val resultingList: MutableList<Point> = emptyList<Point>().toMutableList()
@@ -268,21 +314,6 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
         }
         return loopSizes.max()
     }
-    /*
-            while (adjacentPoints.hasNext()) {
-            val currentPoint = adjacentPoints.next()
-            //visitedPoints.add(currentPoint.key)
-            println("going for $currentPoint")
-            val loopSize = exploreMap(startingPipe.first, currentPoint, visitedPoints, 0)
-            //println("adding $loopSize")
-            if (loopSize != 0) {
-                loopSizes = loopSizes.plus(loopSize)
-                //visitedPoints.remove(currentPoint)
-            } else {
-                //visitedPoints.remove(currentPoint)
-            }
-        }
-     */
 
     private fun exploreMap(
         parentPoint: Point,
@@ -300,7 +331,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                 exploreMap(parentPoint, current, visitedPoints, loopSize + 1)
                 println("step $loopSize, $current")
                 //println(visitedPoints)
-                break;
+                break
             } else if (current != currentPoint && current == parentPoint && loopSize > 2) {
                 //println("found start and visited : $visitedPoints")
                 return visitedPoints.size
@@ -309,23 +340,6 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
         return visitedPoints.size
     }
 }
-
-/*
-while (adjacentPoints.hasNext()) {
-            val current = adjacentPoints.next()
-            val wasVisited = visitedPoints.contains(current)
-            //println("step $loopSize, current $current, is contained : $wasVisited")
-            if (!wasVisited) {
-                exploreMap(parentPoint, current, visitedPoints, loopSize + 1)
-                println("step $loopSize, $current")
-                //println(visitedPoints)
-                break;
-            } else if (current != currentPoint && current == parentPoint && loopSize>2) {
-                //println("found start and visited : $visitedPoints")
-                return visitedPoints.size
-            }
-        }
- */
 
 /*
 Version Marianne
@@ -375,6 +389,10 @@ open class PipePart(val value: Char) {
     override fun toString(): String {
         return "'$value'"
     }
+}
+
+fun List<PipePart>.toStrings(): String {
+    return this.joinToString { "${it.value}" }
 }
 
 /**
@@ -438,4 +456,27 @@ enum class Directions {
     SOUTH,
     EAST,
     WEST
+}
+
+/**
+ * https://en.wikipedia.org/wiki/Pick%27s_theorem
+ * Pick's theorem :
+ * A = i + b/2 -1 --> with A the area of the polygon
+ * i the number of integer points in the polygon
+ * the number of points along the polygon
+ */
+fun applyPick(area: Double, nbOfPoints: Int): Int {
+    return (area - nbOfPoints / 2 + 1).roundToInt()
+}
+
+/**
+ * CF https://www.101computing.net/the-shoelace-algorithm/
+ */
+fun shoelaceArea(pipesOnLoop: List<Point>): Double {
+    val size = pipesOnLoop.size
+    var area = 0.0
+    for (i in 0..<size - 1) {
+        area += pipesOnLoop[i].x * pipesOnLoop[i + 1].y - pipesOnLoop[i + 1].x * pipesOnLoop[i].y
+    }
+    return abs(area + pipesOnLoop[size - 1].x * pipesOnLoop[0].y - pipesOnLoop[0].x * pipesOnLoop[size - 1].y) / 2.0
 }
