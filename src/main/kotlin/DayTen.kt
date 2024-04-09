@@ -461,9 +461,10 @@ enum class Directions {
 /**
  * https://en.wikipedia.org/wiki/Pick%27s_theorem
  * Pick's theorem :
- * A = i + b/2 -1 --> with A the area of the polygon
- * i the number of integer points in the polygon
- * the number of points along the polygon
+ * A = i + b/2 -1 with
+ * 'A', area of the polygon
+ * i, number of integer points in the polygon
+ * b, number of points along the polygon
  */
 fun applyPick(area: Double, nbOfPoints: Int): Int {
     return (area - nbOfPoints / 2 + 1).roundToInt()
