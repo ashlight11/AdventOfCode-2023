@@ -22,7 +22,8 @@ fun String.findGalaxies(): List<Galaxy> {
             } else {
                 null
             }
-        }.filterNotNull().toList()
+        }.filterNotNull()
+        .toList()
 }
 
 fun LongPoint.computeShortestPathTo(other: LongPoint): Long {
@@ -59,6 +60,7 @@ data class Sky(val galaxies: List<Galaxy>, val multiplicationFactor : Long) {
 
     /**
      * G1, G2, G3 -> G1-G2 G1-G3 G2-G3
+     * G2-G1 G2-G3 G3-G1 --> So div 2
      */
     fun computeSumOfAllPaths(): Long {
         val galaxiesIterator = adjustedGalaxies.iterator()
