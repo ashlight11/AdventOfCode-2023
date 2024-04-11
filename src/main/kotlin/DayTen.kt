@@ -365,12 +365,6 @@ fun String.parse(): PipeField {
         }
 }
 
-data class Point(val x: Int, val y: Int) {
-    override fun toString(): String {
-        return "($x, $y)"
-    }
-}
-
 open class PipePart(val value: Char) {
     open var listOfConnections: List<Directions> = emptyList()
     fun toSubclass(): PipePart {
