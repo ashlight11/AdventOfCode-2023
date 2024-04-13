@@ -78,3 +78,11 @@ data class LongPoint(val x: Long, val y: Long) {
         return "($x, $y)"
     }
 }
+
+tailrec fun factorialTailRecursive(n: Int, accumulator: Int = 1): Int {
+    return if (n <= 1) {
+        accumulator
+    } else {
+        factorialTailRecursive(n - 1, n * accumulator)
+    }
+}
