@@ -1,3 +1,6 @@
+package year2023
+
+import LongPoint
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 

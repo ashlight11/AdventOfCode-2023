@@ -1,3 +1,6 @@
+package year2023
+
+import Point
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.roundToInt

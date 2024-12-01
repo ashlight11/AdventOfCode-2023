@@ -1,3 +1,6 @@
+package year2023
+
+import LongPoint
 import java.io.File
 import kotlin.math.abs
 
@@ -52,7 +55,7 @@ data class Sky(val galaxies: List<Galaxy>, val multiplicationFactor : Long) {
         galaxies.forEach {
             it.adjustedPosition = LongPoint(
                 x = it.position.x + multiplicationFactor * (columns.count { intValue -> intValue < it.position.x }),
-                y = it.position.y + multiplicationFactor * ( lines.count { intValue -> intValue < it.position.y })
+                y = it.position.y + multiplicationFactor * (lines.count { intValue -> intValue < it.position.y })
             )
         }
         return galaxies.map { it.adjustedPosition }

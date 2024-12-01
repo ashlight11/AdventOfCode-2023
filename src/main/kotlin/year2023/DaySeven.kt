@@ -1,3 +1,5 @@
+package year2023
+
 import java.io.File
 
 class DaySeven(file: File) {

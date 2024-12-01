@@ -1,3 +1,6 @@
+package year2023
+
+import Point
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
@@ -57,7 +60,7 @@ class DayTenTest {
     }
     @Test
     fun `should find adjacent pipes`(){
-        println(field.getAdjacentPipes(Point(2,1) to PipePart('J').toSubclass()))
+        println(field.getAdjacentPipes(Point(2, 1) to PipePart('J').toSubclass()))
     }
 
     @Test
@@ -120,7 +123,7 @@ class DayTenTest {
 
     @Test
     fun `should test windowed`(){
-        val test = listOf(Point(3,0), Point(4,0), Point(5,0))
+        val test = listOf(Point(3, 0), Point(4, 0), Point(5, 0))
         println(test.windowed(2,1))
     }
 
