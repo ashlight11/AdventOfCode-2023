@@ -27,9 +27,6 @@ fun String.parseAsLetterGrid(): LetterGrid {
         }
 }
 
-/**
- * TODO :  rajouter la notion de direction lors du parcours
- */
 fun Letter.countXmas(letterGrid: LetterGrid) : Int{
     val directions = listOf(
         Point(-1, -1), Point(-1, 0), Point(-1, 1),
