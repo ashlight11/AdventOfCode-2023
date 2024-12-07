@@ -1,5 +1,6 @@
 package year2024
 
+import parseAsIntList
 import java.io.File
 import kotlin.math.abs
 
@@ -7,7 +8,8 @@ import kotlin.math.abs
 fun main() {
     val url = object {}.javaClass.getResource("/year2024/day01.txt")
     val file = File(url!!.toURI())
-    val initialList = file.readText().parseAsIntList()
+    val regex = Regex("[,\\s]+")
+    val initialList = file.readText().parseAsIntList(regex)
     val rightList = initialList.filterIndexed { index, _ -> index % 2 == 0 }.sorted()
     val leftList = initialList.filterIndexed { index, _ -> index % 2 == 1 }.sorted()
     val result = rightList.foldIndexed(initial = 0,
@@ -23,9 +25,7 @@ fun main() {
 
 }
 
-fun String.parseAsIntList(): List<Int> {
-    return this.split(Regex("[,\\s]+")).map { it.toInt() }
-}
+
 
 /**
  * Calculate a total similarity score by adding up each number in the left list

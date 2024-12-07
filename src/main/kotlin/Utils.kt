@@ -86,3 +86,11 @@ tailrec fun factorialTailRecursive(n: Int, accumulator: Int = 1): Int {
         factorialTailRecursive(n - 1, n * accumulator)
     }
 }
+
+fun String.parseAsIntList(regex: Regex): List<Int> {
+    return this.split(regex).map { it.trim().toInt() }
+}
+
+fun String.readLines() : List<String>{
+    return this.split("\n")
+}

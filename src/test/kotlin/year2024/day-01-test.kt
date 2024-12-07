@@ -3,6 +3,7 @@ package year2024
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
+import parseAsIntList
 import kotlin.math.abs
 
 class Day01Test {
@@ -21,7 +22,7 @@ class Day01Test {
 
     @Test
     fun shouldParseAsList() {
-        testInput.parseAsIntList().shouldBe(testList)
+        testInput.parseAsIntList(Regex("[,\\s]+")).shouldBe(testList)
     }
 
     @Test
