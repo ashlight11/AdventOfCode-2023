@@ -60,20 +60,31 @@ class Day05Test {
         updates[3].matchesRules(rules).shouldBe(false)
     }
 
+    val matchingUpdates = updates.mapNotNull { update ->
+        val matches = update.matchesRules(rules)
+        if(matches){
+            update
+        } else {
+            null
+        }
+    }
     @Test
     fun shouldSumMiddleNumberOfAllMatchingUpdates(){
-        val matchingUpdates = updates.mapNotNull { update ->
-            val matches = update.matchesRules(rules)
-            if(matches){
-                update
-            } else {
-                null
-            }
-        }
+
         val result = matchingUpdates.sumOf {
             it[it.size / 2]
         }
         result.shouldBe(143)
+    }
+
+    @Test
+    fun shouldFindSumOfAllNonMatchingUpdatesForced(){
+        val nonMatchingUpdates = updates.filterNot { it in matchingUpdates }
+        val forcedUpdates = nonMatchingUpdates.map { it.forceMatching(rules) }
+        val resultPartTwo = forcedUpdates.sumOf {
+            it[it.size / 2]
+        }
+        resultPartTwo.shouldBe(123)
     }
 }
 
