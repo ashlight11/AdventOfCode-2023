@@ -82,6 +82,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
                 Directions.SOUTH -> Directions.NORTH
                 Directions.EAST -> Directions.WEST
                 Directions.WEST -> Directions.EAST
+                Directions.ERROR -> Directions.ERROR
             }
         }
         var incomingDirection =
@@ -161,6 +162,7 @@ data class PipeField(val pipes: MutableMap<Point, PipePart> = mutableMapOf()) {
             Directions.WEST -> {
                 Point(x - 1, y) to Directions.EAST
             }
+            Directions.ERROR -> Point(-1,1) to Directions.ERROR
         }
     }
 
@@ -452,7 +454,8 @@ enum class Directions {
     NORTH,
     SOUTH,
     EAST,
-    WEST
+    WEST,
+    ERROR,
 }
 
 /**
